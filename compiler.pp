@@ -2,6 +2,7 @@ program Cradle;
 
 { Constant Declarations }
 const TAB = ^I;
+const CR = ^M;
 
 { Variable Declarations }
 var Look: char; { Lookahead character }
@@ -45,6 +46,12 @@ begin
 	IsAlpha := upcase(c) in ['A'..'Z'];
 end;
 
+{ Recognize an Addop }
+function IsAddOp(c: char): boolean;
+begin
+	IsAddop := c in ['+', '-'];
+end;
+
 { Recognize a Decimal Digit }
 function IsDigit(c: char): boolean;
 begin
@@ -82,10 +89,33 @@ end;
 
 { ------------------- }
 
+{ Parse and Translate an Identifier }
+procedure Ident;
+var Name: char;
+begin
+	Name := GetName;
+	if Look = '(' then begin
+		Match('(');
+		Match(')');
+		EmitLn('BSR ' + Name);
+		end
+	else
+		EmitLn('MOVE ' + Name + '(PC),D0')
+end;
+
 { Parse and Translate a Math Factor }
+procedure Expression; Forward;
 procedure Factor;
 begin
-	EmitLn('MOVE #' + GetNum + ',D0')
+	if Look = '(' then begin
+		Match('(');
+		Expression;
+		Match(')');
+		end
+	else if IsAlpha(Look) then
+		Ident
+	else
+		EmitLn('MOVE #' + GetNum + ',D0');
 end;
 
 { Recognize and Translate a Multiply }
@@ -114,7 +144,6 @@ begin
 		case Look of
 			'*': Multiply;
 			'/': Divide;
-		else Expected('Mulop');
 		end;
 	end;
 end;
@@ -139,13 +168,15 @@ end;
 { Parse and Translate a Math Expression }
 procedure Expression;
 begin
-	Term;
-	while Look in ['+', '-'] do begin
+	if IsAddop(Look) then
+		EmitLn('CLR D0')
+	else
+		Term;
+	while IsAddop(Look) do begin
 		EmitLn('MOVE D0,-(SP)'); { -(SP) is push onto the stack in the 68000 processor}
 		case Look of
 			'+': Add;
 			'-': Subtract;
-		else Expected('Addop');
 		end;
 	end;
 end;
@@ -162,4 +193,5 @@ end;
 begin
 	Init;
 	Expression;
+	if Look <> CR then Expected('Newline');
 end.
