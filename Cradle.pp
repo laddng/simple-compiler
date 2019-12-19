@@ -93,7 +93,7 @@ procedure Add;
 begin
 	Match('+');
 	Term;
-	EmitLn('ADD (SP)+,D0');
+	EmitLn('ADD (SP)+,D0'); { (SP)+ is pop off the stack in the 6800 processor }
 end;
 
 { Recognize and Translate a Subtract }
@@ -101,7 +101,7 @@ procedure Subtract;
 begin
 	Match('-');
 	Term;
-	EmitLn('SUB (SP)+,D0');
+	EmitLn('SUB (SP)+,D0'); { (SP)+ is pop off the stack in the 6800 processor }
 	EmitLn('NEG D0');
 end;
 
@@ -110,7 +110,7 @@ procedure Expression;
 begin
 	Term;
 	while Look in ['+', '-'] do begin
-		EmitLn('MOVE D0,-(SP)');
+		EmitLn('MOVE D0,-(SP)'); { -(SP) is push onto the stack in the 6800 processor}
 		case Look of
 			'+': Add;
 			'-': Subtract;
