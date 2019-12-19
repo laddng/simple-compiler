@@ -82,10 +82,41 @@ end;
 
 { ------------------- }
 
-{ Parse and Translate a Term }
-procedure Term;
+{ Parse and Translate a Math Factor }
+procedure Factor;
 begin
 	EmitLn('MOVE #' + GetNum + ',D0')
+end;
+
+{ Recognize and Translate a Multiply }
+procedure Multiply;
+begin
+	Match('*');
+	Factor;
+	EmitLn('MULS (SP)+,D0');
+end;
+
+{ Recognize and Translate a Divide }
+procedure Divide;
+begin
+	Match('/');
+	Factor;
+	EmitLn('MOVE (SP)+,D1');
+	EmitLn('DIVS D1,D0');
+end;
+
+{ Parse and Translate a Math Term }
+procedure Term;
+begin
+	Factor;
+	while Look in ['*', '/'] do begin
+		EmitLn('Move D0,-(SP)');
+		case Look of
+			'*': Multiply;
+			'/': Divide;
+		else Expected('Mulop');
+		end;
+	end;
 end;
 
 { Recognize and Translate an Add }
@@ -93,7 +124,7 @@ procedure Add;
 begin
 	Match('+');
 	Term;
-	EmitLn('ADD (SP)+,D0'); { (SP)+ is pop off the stack in the 6800 processor }
+	EmitLn('ADD (SP)+,D0'); { (SP)+ is pop off the stack in the 68000 processor }
 end;
 
 { Recognize and Translate a Subtract }
@@ -101,7 +132,7 @@ procedure Subtract;
 begin
 	Match('-');
 	Term;
-	EmitLn('SUB (SP)+,D0'); { (SP)+ is pop off the stack in the 6800 processor }
+	EmitLn('SUB (SP)+,D0'); { (SP)+ is pop off the stack in the 68000 processor }
 	EmitLn('NEG D0');
 end;
 
@@ -110,7 +141,7 @@ procedure Expression;
 begin
 	Term;
 	while Look in ['+', '-'] do begin
-		EmitLn('MOVE D0,-(SP)'); { -(SP) is push onto the stack in the 6800 processor}
+		EmitLn('MOVE D0,-(SP)'); { -(SP) is push onto the stack in the 68000 processor}
 		case Look of
 			'+': Add;
 			'-': Subtract;
