@@ -1,7 +1,7 @@
 # Simple Compiler
 
-This is a simple compiler written in Pascal, based off Jack Crenshaw's ["Let's
-Build a Compiler"](https://compilers.iecc.com/crenshaw/).
+This is a simple compiler written in Pascal, based off Jack Crenshaw's [Let's
+Build a Compiler](https://compilers.iecc.com/crenshaw/).
 
 ### Setup
 
@@ -11,5 +11,7 @@ version of the compiler can be found
 
 Once installed, compile the program with:
 
-```shell $ fpc lib ```
+```shell
+$ fpc *.pp
+```
 
